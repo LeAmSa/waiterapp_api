@@ -1,18 +1,32 @@
+import path from "node:path";
+
 import express from "express";
+
 import mongoose from "mongoose";
 
-const app = express();
+import { router } from "./router";
 
-// const databaseUrl = process.env.DATABASE_URL;
+import * as dotenv from "dotenv";
+dotenv.config();
 
-// console.log(databaseUrl);
+const databaseUrl = process.env.DATABASE_URL;
 
 mongoose
-  //@ts-ignore
-  .connect(process.env.DATABASE_URL)
-  .then(() => console.log("Connected to mongo!"))
-  .catch(() => console.log("Error!"));
+  .connect(databaseUrl as string)
+  .then(() => {
+    const app = express();
 
-app.listen(3333, () => {
-  console.log("Server is running on http://localhost:3333");
-});
+    app.use(
+      "/uploads",
+      express.static(path.resolve(__dirname, "..", "uploads"))
+    );
+    app.use(express.json());
+    app.use(router);
+
+    app.listen(3333, () => {
+      console.log("Server is running on http://localhost:3333");
+    });
+
+    console.log("Connected to mongo!");
+  })
+  .catch((error) => console.log(error));
